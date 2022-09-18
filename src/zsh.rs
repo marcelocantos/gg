@@ -33,8 +33,8 @@ pub fn zsh(
             write!(
                 out,
                 "\
-                    gg() {{ eval $('{exepath}' \"$@\"); }};\n\
-                    _gg() {{ _path_files -/ -W '{ggroot}' }};\n\
+                    gg() {{ eval $('{exepath}' --get \"$@\"); }};\n\
+                    _gg() {{ _path_files -/ -W '{ggroot}'; }};\n\
                     compdef _gg gg;\n\
                 ",
             )?;

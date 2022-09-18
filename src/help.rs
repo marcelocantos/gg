@@ -4,7 +4,7 @@ pub fn help(exepath: &Path) -> String {
     return format!("
 \x1b[1mgg needs a bit of setup help from you.\x1b[0m
 
-  • Add \x1b[32meval $({0} -i zsh)\x1b[0m to your \x1b[1m~/.zshrc\x1b[0m.
+  • Add \x1b[32meval \"$({0} -i zsh)\"\x1b[0m to your \x1b[1m~/.zshrc\x1b[0m.
     - If you get \"zsh: command not found: compdef\" after starting a new shell,
       add \x1b[32mautoload -U compinit; compinit\x1b[0m above \x1b[32meval ...\x1b[0m and try again.
     - If you get the error \x1b[1;31mdefining function based on alias `gg'\x1b[0m, you need to
@@ -26,8 +26,8 @@ pub fn help(exepath: &Path) -> String {
   • Run \x1b[32mgg \x1b[1mrepo-url\x1b[0m in a new shell.  Try tab-completion on cloned repos.
   • You can add more helpers to \x1b[1m~/.zshrc\x1b[0m as desired, for example:
 \x1b[32m
-      eval $({0} -i zsh ghg github.com)
-      eval $({0} -i zsh gmg github.com/marcelocantos)
+      eval \"$({0} -i zsh ghg github.com)\"
+      eval \"$({0} -i zsh gmg github.com/marcelocantos)\"
 \x1b[0m
     The above lines will add commands ghg and gmg, which will prefix their
     parameter with the given argument.  For example, \x1b[32mgmg gg\x1b[0m will fetch the

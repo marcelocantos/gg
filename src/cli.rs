@@ -31,6 +31,10 @@ pub struct Cli {
     #[clap(short, long, value_enum, value_name = "SHELL")]
     pub install: Option<Shell>,
 
+    /// (Internal use only) get a repo
+    #[clap(long)]
+    pub get: bool,
+
     /// (Internal use only) repo spec prefix
     #[clap(long)]
     pub prefix: Option<PathBuf>,

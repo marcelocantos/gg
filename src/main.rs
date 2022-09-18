@@ -42,8 +42,8 @@ fn main() -> Result<()> {
         Box::new(stdout())
     };
 
-    match cli.install {
-        None => match cli.arg1 {
+    if cli.get {
+        return match cli.arg1 {
             Some(ref path) => getgit(
                 Path::new(path.as_str()),
                 &cli,
@@ -51,8 +51,12 @@ fn main() -> Result<()> {
                 squiggle.as_ref(),
                 &mut out,
             ),
-            None => Ok(print!("{}", help(squiggle(exepath.as_path()).as_path()))),
-        },
+            None => Ok(eprintln!("Usage: gg <path>")),
+        };
+    };
+
+    match cli.install {
+        None => Ok(eprint!("{}", help(squiggle(exepath.as_path()).as_path()))),
         Some(shell) => {
             let arg1 = cli.arg1.as_ref().map(|s| s.as_str());
             let arg2 = cli.arg2.as_ref().map(|s| s.as_str());
@@ -63,5 +67,6 @@ fn main() -> Result<()> {
             }
         }
     }?;
+
     Ok(())
 }
