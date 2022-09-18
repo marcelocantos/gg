@@ -1,0 +1,15 @@
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+[package]
+name = "gg"
+version = "0.1.0"
+authors = ["Marcelo Cantos <marcelo.cantos@gmail.com>"]
+edition = "2021"
+description = "gg makes it easy to find, fetch and work with your git repos."
+keywords = ["git"]
+license = "Apache-2.0"
+
+[dependencies]
+anyhow = "1.0.65"
+clap = { version = "3.2.21", features = ["derive"] }
+home = "0.5.3"
+regex = "1.6.0"
