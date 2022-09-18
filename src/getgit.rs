@@ -71,7 +71,14 @@ fn write_commands(
         );
         return Ok(());
     }
+
     let prefix = m.name("prefix").unwrap().as_str();
+    let prefix = if !Regex::new(r"https?://|git@").unwrap().is_match(prefix) {
+        format!("https://{prefix}")
+    } else {
+        prefix.to_string()
+    };
+
     let org = m.name("org").unwrap().as_str();
     let repo = m.name("repo").unwrap();
     let tail = match m.name("tail") {
