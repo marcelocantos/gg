@@ -21,8 +21,8 @@ pub fn zsh(
             write!(
                 out,
                 "\
-                    {command}() {{ gg --prefix '{prefix_path}' \"$@\"); }};\n\
-                    _{command}() {{ _path_files -/ -W '{prefix_root}' }};\n\
+                    {command}() {{ gg --prefix '{prefix_path}' \"$@\"; }};\n\
+                    _{command}() {{ _path_files -/ -W '{prefix_root}'; }};\n\
                     compdef _{command} {command};\n\
                 ",
             )?;
