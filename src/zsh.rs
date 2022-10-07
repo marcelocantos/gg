@@ -16,8 +16,6 @@ pub fn zsh(
             let prefix_path = Path::new(prefix);
             let prefix_root = ggroot.join(prefix_path);
 
-            let prefix_path = prefix_path.display();
-            let prefix_root = prefix_root.display();
             write!(
                 out,
                 "\
@@ -25,11 +23,11 @@ pub fn zsh(
                     _{command}() {{ _path_files -/ -W '{prefix_root}'; }};\n\
                     compdef _{command} {command};\n\
                 ",
+                prefix_path = prefix_path.display(),
+                prefix_root = prefix_root.display(),
             )?;
         }
         None => {
-            let exepath = exepath.display();
-            let ggroot = ggroot.display();
             write!(
                 out,
                 "\
@@ -37,6 +35,8 @@ pub fn zsh(
                     _gg() {{ _path_files -/ -W '{ggroot}'; }};\n\
                     compdef _gg gg;\n\
                 ",
+                exepath = exepath.display(),
+                ggroot = ggroot.display(),
             )?;
         }
     }
