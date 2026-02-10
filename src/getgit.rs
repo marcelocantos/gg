@@ -112,9 +112,7 @@ pub fn getgit(path: &Path, prefix: Option<&Path>, dry_run: bool, ggroot: &Path) 
             );
 
             let orgroot = hostroot.join(org);
-            if create_dir_all(orgroot.as_path()).is_err() {
-                bail!("failed to create {}", orgroot.display());
-            }
+            create_dir_all(orgroot.as_path())?;
 
             if !dry_run {
                 let reporoot = orgroot.join(repo);
