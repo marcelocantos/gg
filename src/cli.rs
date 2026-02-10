@@ -11,11 +11,13 @@ use clap::Parser;
     long_about = None,
 )]
 pub struct Cli {
-    #[clap()]
-    pub arg1: Option<String>,
+    /// Repo URL or path (with --get), or alias command name (with -i)
+    #[clap(value_name = "TARGET")]
+    pub target: Option<String>,
 
-    #[clap()]
-    pub arg2: Option<String>,
+    /// Path prefix for alias command (with -i, e.g., github.com/org)
+    #[clap(value_name = "ALIAS_PREFIX")]
+    pub alias_prefix: Option<String>,
 
     /// Print actions to perform but do nothing
     #[clap(short = 'n', long)]
@@ -25,17 +27,17 @@ pub struct Cli {
     #[clap(short, long, action = clap::ArgAction::Count)]
     pub debug: u8,
 
-    /// Print $(eval ...) setup for shell function and auto-complete (only zsh
-    /// is implemented)
+    /// Emit shell integration code; optionally define an alias command
+    /// with a prefix (e.g., -i zsh ghg github.com)
     #[clap(short, long, value_enum, value_name = "SHELL")]
     pub install: Option<Shell>,
 
-    /// (Internal use only) get a repo
-    #[clap(long)]
+    /// (Internal) get a repo
+    #[clap(long, hide = true)]
     pub get: bool,
 
-    /// (Internal use only) repo spec prefix
-    #[clap(long)]
+    /// (Internal) repo spec prefix for alias invocations
+    #[clap(long, hide = true)]
     pub prefix: Option<PathBuf>,
 }
 

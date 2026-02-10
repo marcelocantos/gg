@@ -45,7 +45,7 @@ fn run() -> Result<()> {
     let mut out: Box<dyn io::Write> = Box::new(stdout());
 
     if cli.get {
-        return match cli.arg1 {
+        return match cli.target {
             Some(ref path) => getgit(
                 Path::new(path.as_str()),
                 &cli,
@@ -64,12 +64,12 @@ fn run() -> Result<()> {
             Ok(())
         }
         Some(shell) => {
-            let arg1 = cli.arg1.as_deref();
-            let arg2 = cli.arg2.as_deref();
+            let command = cli.target.as_deref();
+            let prefix = cli.alias_prefix.as_deref();
             match shell {
-                cli::Shell::Zsh => zsh(arg1, arg2, &exepath, &ggroot, &mut out),
-                cli::Shell::Bash => bash(arg1, arg2, &exepath, &ggroot, &mut out),
-                cli::Shell::Fish => fish(arg1, arg2, &exepath, &ggroot, &mut out),
+                cli::Shell::Zsh => zsh(command, prefix, &exepath, &ggroot, &mut out),
+                cli::Shell::Bash => bash(command, prefix, &exepath, &ggroot, &mut out),
+                cli::Shell::Fish => fish(command, prefix, &exepath, &ggroot, &mut out),
             }
         }
     }

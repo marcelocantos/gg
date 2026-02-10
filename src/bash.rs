@@ -4,8 +4,8 @@ use std::path::Path;
 use anyhow::Result;
 
 pub fn bash(
-    _arg1: Option<&str>,
-    _arg2: Option<&str>,
+    _command: Option<&str>,
+    _prefix: Option<&str>,
     _exepath: &Path,
     _ggroot: &Path,
     _out: &mut Box<dyn Write>,

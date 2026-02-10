@@ -6,15 +6,15 @@ use anyhow::{Context, Result};
 use crate::shell;
 
 pub fn zsh(
-    arg1: Option<&str>,
-    arg2: Option<&str>,
+    command: Option<&str>,
+    prefix: Option<&str>,
     exepath: &Path,
     ggroot: &Path,
     out: &mut Box<dyn Write>,
 ) -> Result<()> {
-    match arg1 {
+    match command {
         Some(command) => {
-            let prefix = arg2.context("missing prefix argument")?;
+            let prefix = prefix.context("missing prefix argument")?;
             let prefix_path = Path::new(prefix);
             let prefix_root = ggroot.join(prefix_path);
 
