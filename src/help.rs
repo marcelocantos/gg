@@ -31,7 +31,7 @@ pub fn help(exepath: &Path) -> String {
 \x1b[0m
     The above lines will add commands ghg and gmg, which will prefix their
     parameter with the given argument.  For example, \x1b[32mgmg gg\x1b[0m will fetch the
-    \x1b[1manz.com/marcelocantos/gg\x1b[0m repo.  Auto-completion will also work for any
+    \x1b[1mgithub.com/marcelocantos/gg\x1b[0m repo.  Auto-completion will also work for any
     locally cloned repos.  For example, \x1b[32mgg \x1b[1m[tab]\x1b[0m will tab-complete github.com
     and any other git hosting services from which you have cloned any repos
     locally.
