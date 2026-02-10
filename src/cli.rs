@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use clap;
 use clap::Parser;
 
 #[derive(Parser)]

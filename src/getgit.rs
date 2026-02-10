@@ -2,6 +2,7 @@ use std::fs::create_dir_all;
 use std::io::{self, Write};
 use std::path::Path;
 use std::process::Command;
+use std::sync::LazyLock;
 
 use anyhow::{bail, Result};
 use regex::Regex;
@@ -9,17 +10,8 @@ use regex::Regex;
 use crate::cli;
 use crate::env;
 
-pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
-    let home = env::home()?;
-    let squiggle = env::squiggler(home.as_path());
-    let url = match &cli.prefix {
-        Some(prefix) => prefix.join(path).to_path_buf(),
-        None => path.to_path_buf(),
-    }
-    .display()
-    .to_string();
-
-    let m = Regex::new(
+static URL_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
         r"(?x)
         ^
         (?P<prefix>
@@ -33,7 +25,19 @@ pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
         $",
     )
     .unwrap()
-    .captures(url.as_str());
+});
+
+pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
+    let home = env::home()?;
+    let squiggle = env::squiggler(home.as_path());
+    let url = match &cli.prefix {
+        Some(prefix) => prefix.join(path).to_path_buf(),
+        None => path.to_path_buf(),
+    }
+    .display()
+    .to_string();
+
+    let m = URL_RE.captures(url.as_str());
 
     match m {
         Some(m) => {

@@ -1,7 +1,7 @@
 use std::path::Path;
 
 pub fn help(exepath: &Path) -> String {
-    return format!("
+    format!("
 \x1b[1mgg needs a bit of setup help from you.\x1b[0m
 
   • Add \x1b[32meval \"$({0} -i zsh)\"\x1b[0m to your \x1b[1m~/.zshrc\x1b[0m.
@@ -38,5 +38,5 @@ pub fn help(exepath: &Path) -> String {
 
 Happy \x1b[1;33mgg\x1b[0metting!
 
-", exepath.display());
+", exepath.display())
 }

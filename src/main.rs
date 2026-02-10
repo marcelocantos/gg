@@ -44,15 +44,21 @@ fn main() -> Result<()> {
                 &cli,
                 ggroot.as_path(),
             ),
-            None => Ok(eprintln!("Usage: gg <path>")),
+            None => {
+                eprintln!("Usage: gg <path>");
+                Ok(())
+            }
         };
     };
 
     match cli.install {
-        None => Ok(eprint!("{}", help(squiggle(exepath.as_path()).as_path()))),
+        None => {
+            eprint!("{}", help(squiggle(exepath.as_path()).as_path()));
+            Ok(())
+        }
         Some(shell) => {
-            let arg1 = cli.arg1.as_ref().map(|s| s.as_str());
-            let arg2 = cli.arg2.as_ref().map(|s| s.as_str());
+            let arg1 = cli.arg1.as_deref();
+            let arg2 = cli.arg2.as_deref();
             match shell {
                 cli::Shell::Zsh => zsh(arg1, arg2, &exepath, &ggroot, &mut out),
                 cli::Shell::Bash => bash(arg1, arg2, &exepath, &ggroot, &mut out),
