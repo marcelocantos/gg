@@ -13,3 +13,6 @@ anyhow = "1.0.65"
 clap = { version = "3.2.21", features = ["derive"] }
 home = "0.5.3"
 regex = "1.6.0"
+
+[dev-dependencies]
+tempfile = "3"

@@ -51,20 +51,20 @@ gg() {{\n\
             cd_dir) cd_dir=\"${{_gg_line#*=}}\" ;;\n\
         esac\n\
     done <<< \"$output\"\n\
-    [[ \"$TERM_PROGRAM\" == \"vscode\" || -n \"$GGNOAUTOCD\" ]] && return\n\
+    if [[ \"${{TERM_PROGRAM:-}}\" == \"vscode\" || -n \"${{GGNOAUTOCD:-}}\" ]]; then return; fi\n\
     case \"$action\" in\n\
         clone) git -C \"$git_dir\" clone --recurse-submodules \"$git_url\" || return ;;\n\
         fetch) git -C \"$git_dir\" fetch --all --prune --jobs=10 --recurse-submodules=yes || return ;;\n\
     esac\n\
     cd \"$cd_dir\" || return\n\
-    local viewer=\"$GGDIRVIEWER\"\n\
+    local viewer=\"${{GGDIRVIEWER:-}}\"\n\
     if [ -z \"$viewer\" ]; then\n\
         local vscode='/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'\n\
         [ -x \"$vscode\" ] && viewer=\"$vscode\"\n\
     elif [ \"$viewer\" = \"-\" ]; then\n\
         viewer=''\n\
     fi\n\
-    [ -n \"$viewer\" ] && \"$viewer\" \"$cd_dir\"\n\
+    if [ -n \"$viewer\" ]; then \"$viewer\" \"$cd_dir\"; fi\n\
 }};\n\
 _gg() {{ _path_files -/ -W '{ggroot}'; }};\n\
 compdef _gg gg;\n\
