@@ -7,6 +7,7 @@ use regex::{Captures, Regex};
 
 use crate::cli;
 use crate::env;
+use crate::shell;
 
 pub fn getgit(
     path: &Path,
@@ -40,9 +41,7 @@ pub fn getgit(
 
     match m {
         Some(m) => write_commands(ggroot, &mut out, m, squiggle),
-        None => {
-            panic!("invalid path: {}", path.display());
-        }
+        None => bail!("invalid path: {}", path.display()),
     }
 }
 
@@ -59,7 +58,7 @@ fn write_commands(
             Some(host) => host,
             None => match m.name("host") {
                 Some(host) => host,
-                None => panic!("no host"),
+                None => bail!("no host in URL"),
             },
         },
     };
@@ -103,25 +102,29 @@ fn write_commands(
         bail!("failed to create {}", orgroot.display());
     }
     if env::var("TERM_PROGRAM") != "vscode" && !env::ggnoautocd() {
-        let ggroot = ggroot.display();
         let host = host.as_str();
         let repo = repo.as_str();
         let tail = tail.as_str();
-        let giturl = giturl.display();
         let reporoot = orgroot.join(repo);
-        let orgroot = orgroot.display();
         let git_cmd = if reporoot.is_dir() {
-            let reporoot = reporoot.display();
+            let reporoot = shell::escape(&reporoot.display().to_string());
             format!("git -C '{reporoot}' fetch --all --prune --jobs=10 --recurse-submodules=yes")
         } else {
+            let orgroot = shell::escape(&orgroot.display().to_string());
+            let giturl = shell::escape(&giturl.display().to_string());
             format!("git -C '{orgroot}' clone --recurse-submodules '{giturl}'")
         };
-        let reporoot = reporoot.display();
+        let reporoot = shell::escape(&reporoot.display().to_string());
+        let tail = shell::escape(tail);
         let cd_cmd = format!(" && cd '{reporoot}{tail}'");
         let viewer = env::ggdirviewer();
         let viewer_cmd = match viewer {
             Some(viewer) => {
-                format!(" && '{viewer}' '{ggroot}/{host}/{org}/{repo}{tail}'\n")
+                let viewer = shell::escape(&viewer);
+                let target = shell::escape(&format!(
+                    "{}/{}/{}/{}{}", ggroot.display(), host, org, repo, tail
+                ));
+                format!(" && '{viewer}' '{target}'\n")
             }
             None => "".to_string(),
         };

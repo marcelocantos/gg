@@ -1,7 +1,9 @@
 use std::io::Write;
 use std::path::Path;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
+
+use crate::shell;
 
 pub fn zsh(
     arg1: Option<&str>,
@@ -12,9 +14,13 @@ pub fn zsh(
 ) -> Result<()> {
     match arg1 {
         Some(command) => {
-            let prefix = arg2.unwrap();
+            let prefix = arg2.context("missing prefix argument")?;
             let prefix_path = Path::new(prefix);
             let prefix_root = ggroot.join(prefix_path);
+
+            let command = shell::escape(command);
+            let prefix_path = shell::escape(&prefix_path.display().to_string());
+            let prefix_root = shell::escape(&prefix_root.display().to_string());
 
             write!(
                 out,
@@ -23,11 +29,12 @@ pub fn zsh(
                     _{command}() {{ _path_files -/ -W '{prefix_root}'; }};\n\
                     compdef _{command} {command};\n\
                 ",
-                prefix_path = prefix_path.display(),
-                prefix_root = prefix_root.display(),
             )?;
         }
         None => {
+            let exepath = shell::escape(&exepath.display().to_string());
+            let ggroot = shell::escape(&ggroot.display().to_string());
+
             write!(
                 out,
                 "\
@@ -35,8 +42,6 @@ pub fn zsh(
                     _gg() {{ _path_files -/ -W '{ggroot}'; }};\n\
                     compdef _gg gg;\n\
                 ",
-                exepath = exepath.display(),
-                ggroot = ggroot.display(),
             )?;
         }
     }

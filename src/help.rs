@@ -15,7 +15,7 @@ pub fn help(exepath: &Path) -> String {
     - Caveat: bash is not supported yet.
   • Optional:
     - \x1b[32mexport GGROOT=\x1b[1mroot\x1b[0m sets the common root directory for all repos (default:
-      \x1b[32m~/working\x1b[0m).
+      \x1b[32m~/work\x1b[0m).
       \x1b[1;30m▸ ~ is not recommended as it makes tab-completion much harder.\x1b[0m
     - \x1b[32mexport GGDIRVIEWER=\x1b[1mviewer\x1b[0m provides a command to open the target directory
       (default: \x1b[32mcode\x1b[0m if VSCode is installed, else nothing).  If you don't want

@@ -8,6 +8,7 @@ mod env;
 mod fish;
 mod getgit;
 mod help;
+mod shell;
 mod zsh;
 
 use std;
@@ -27,8 +28,8 @@ use anyhow::Result;
 fn main() -> Result<()> {
     let cli = cli::Cli::parse();
 
-    let home = env::home();
-    let exepath = env::exepath();
+    let home = env::home()?;
+    let exepath = env::exepath()?;
     let squiggle = env::squiggler(home.as_path());
 
     let ggroot = match env::var("GGROOT").as_str() {
