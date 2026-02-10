@@ -80,13 +80,11 @@ pub fn setup(exepath: &Path) -> Result<()> {
     // Aliases
     eprintln!();
     eprintln!("You can add shorthand aliases, e.g., \x1b[32mghg github.com\x1b[0m creates a");
-    eprintln!("command \x1b[32mghg\x1b[0m that prefixes its argument with \x1b[32mgithub.com\x1b[0m.");
+    eprintln!(
+        "command \x1b[32mghg\x1b[0m that prefixes its argument with \x1b[32mgithub.com\x1b[0m."
+    );
     loop {
-        let alias = prompt(
-            &mut reader,
-            "Add alias (CMD PREFIX, or Enter to skip)",
-            "",
-        )?;
+        let alias = prompt(&mut reader, "Add alias (CMD PREFIX, or Enter to skip)", "")?;
         if alias.is_empty() {
             break;
         }
@@ -102,10 +100,7 @@ pub fn setup(exepath: &Path) -> Result<()> {
     }
 
     // Build the block
-    let block = format!(
-        "# --- gg ---\n{}\n# --- end gg ---\n",
-        lines.join("\n")
-    );
+    let block = format!("# --- gg ---\n{}\n# --- end gg ---\n", lines.join("\n"));
 
     // Show and confirm
     eprintln!();
@@ -118,10 +113,7 @@ pub fn setup(exepath: &Path) -> Result<()> {
 
     let action = prompt(
         &mut reader,
-        &format!(
-            "Append to {}? [Y/n/print]",
-            squiggle_path(&home, &zshrc)
-        ),
+        &format!("Append to {}? [Y/n/print]", squiggle_path(&home, &zshrc)),
         "y",
     )?;
 
@@ -133,9 +125,7 @@ pub fn setup(exepath: &Path) -> Result<()> {
                 .open(&zshrc)?;
             writeln!(file)?; // blank line before block
             write!(file, "{block}")?;
-            eprintln!(
-                "\x1b[32mInstalled!\x1b[0m Open a new shell to activate gg."
-            );
+            eprintln!("\x1b[32mInstalled!\x1b[0m Open a new shell to activate gg.");
         }
         "print" | "p" => {
             // Print to stdout so user can copy/paste

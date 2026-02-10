@@ -480,7 +480,13 @@ fn setup_creates_zshrc() {
 #[test]
 fn setup_block_markers() {
     let tmp = TempDir::new().unwrap();
-    let input = setup_input("~/myrepos", "https", SetupViewer::No, &["ghg github.com"], "y");
+    let input = setup_input(
+        "~/myrepos",
+        "https",
+        SetupViewer::No,
+        &["ghg github.com"],
+        "y",
+    );
     let r = run_setup(tmp.path(), &input);
     assert!(r.success, "stderr: {}", r.stderr);
 
@@ -488,7 +494,9 @@ fn setup_block_markers() {
 
     // Extract the block between markers
     let start = content.find("# --- gg ---").expect("missing start marker");
-    let end = content.find("# --- end gg ---").expect("missing end marker");
+    let end = content
+        .find("# --- end gg ---")
+        .expect("missing end marker");
     let block = &content[start..end + "# --- end gg ---".len()];
 
     // Verify block structure
@@ -559,8 +567,6 @@ fn shell_integration() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
     if !output.status.success() {
-        panic!(
-            "Shell integration test failed.\nstdout:\n{stdout}\nstderr:\n{stderr}"
-        );
+        panic!("Shell integration test failed.\nstdout:\n{stdout}\nstderr:\n{stderr}");
     }
 }

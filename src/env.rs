@@ -16,7 +16,6 @@ pub fn exepath() -> Result<PathBuf> {
     env::current_exe().map_err(|e| anyhow::anyhow!("gg executable not found: {e}"))
 }
 
-
 pub fn squiggler<'a>(home: &'a Path) -> Box<dyn Fn(&Path) -> PathBuf + 'a> {
     Box::new(move |path: &Path| match path.strip_prefix(home) {
         Ok(tail) => Path::new("~").join(tail),
