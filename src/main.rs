@@ -6,14 +6,13 @@ mod cli;
 mod env;
 mod fish;
 mod getgit;
-mod help;
+mod setup;
 mod shell;
 mod zsh;
 
 use std::path::Path;
 
 use clap::Parser;
-use help::help;
 
 use bash::bash;
 use fish::fish;
@@ -32,12 +31,10 @@ fn main() {
 fn run() -> Result<()> {
     let cli = cli::Cli::parse();
 
-    let home = env::home()?;
     let exepath = env::exepath()?;
-    let squiggle = env::squiggler(home.as_path());
 
     let ggroot = match env::var("GGROOT").as_str() {
-        "" => home.join("work"),
+        "" => env::home()?.join("work"),
         var => Path::new(var).to_path_buf(),
     };
 
@@ -57,10 +54,7 @@ fn run() -> Result<()> {
     };
 
     match cli.install {
-        None => {
-            eprint!("{}", help(squiggle(exepath.as_path()).as_path()));
-            Ok(())
-        }
+        None => setup::setup(&exepath),
         Some(shell) => {
             let command = cli.target.as_deref();
             let prefix = cli.alias_prefix.as_deref();
