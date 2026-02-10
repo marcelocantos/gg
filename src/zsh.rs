@@ -38,10 +38,37 @@ pub fn zsh(
             write!(
                 out,
                 "\
-                    gg() {{ eval $('{exepath}' --get \"$@\"); }};\n\
-                    _gg() {{ _path_files -/ -W '{ggroot}'; }};\n\
-                    compdef _gg gg;\n\
-                ",
+gg() {{\n\
+    local output\n\
+    output=$('{exepath}' --get \"$@\") || return $?\n\
+    [ -z \"$output\" ] && return\n\
+    local action git_dir git_url cd_dir\n\
+    while IFS= read -r _gg_line; do\n\
+        case \"${{_gg_line%%=*}}\" in\n\
+            action) action=\"${{_gg_line#*=}}\" ;;\n\
+            git_dir) git_dir=\"${{_gg_line#*=}}\" ;;\n\
+            git_url) git_url=\"${{_gg_line#*=}}\" ;;\n\
+            cd_dir) cd_dir=\"${{_gg_line#*=}}\" ;;\n\
+        esac\n\
+    done <<< \"$output\"\n\
+    [[ \"$TERM_PROGRAM\" == \"vscode\" || -n \"$GGNOAUTOCD\" ]] && return\n\
+    case \"$action\" in\n\
+        clone) git -C \"$git_dir\" clone --recurse-submodules \"$git_url\" || return ;;\n\
+        fetch) git -C \"$git_dir\" fetch --all --prune --jobs=10 --recurse-submodules=yes || return ;;\n\
+    esac\n\
+    cd \"$cd_dir\" || return\n\
+    local viewer=\"$GGDIRVIEWER\"\n\
+    if [ -z \"$viewer\" ]; then\n\
+        local vscode='/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'\n\
+        [ -x \"$vscode\" ] && viewer=\"$vscode\"\n\
+    elif [ \"$viewer\" = \"-\" ]; then\n\
+        viewer=''\n\
+    fi\n\
+    [ -n \"$viewer\" ] && \"$viewer\" \"$cd_dir\"\n\
+}};\n\
+_gg() {{ _path_files -/ -W '{ggroot}'; }};\n\
+compdef _gg gg;\n\
+",
             )?;
         }
     }

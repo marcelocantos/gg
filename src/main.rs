@@ -1,6 +1,5 @@
 // gg will clone or fetch a repo into a standardised location (e.g.,
-// ~/working/github.com/org/repo). It will also cd into it and open it in an
-// IDE.
+// ~/work/github.com/org/repo). It will also cd into it and open it in an IDE.
 
 mod bash;
 mod cli;
@@ -11,8 +10,7 @@ mod help;
 mod shell;
 mod zsh;
 
-use std;
-use std::io::{self, stderr, stdout};
+use std::io::{self, stdout};
 use std::path::Path;
 
 use clap::Parser;
@@ -37,11 +35,7 @@ fn main() -> Result<()> {
         var => Path::new(var).to_path_buf(),
     };
 
-    let mut out: Box<dyn io::Write> = if cli.dry_run {
-        Box::new(stderr())
-    } else {
-        Box::new(stdout())
-    };
+    let mut out: Box<dyn io::Write> = Box::new(stdout());
 
     if cli.get {
         return match cli.arg1 {
@@ -49,8 +43,6 @@ fn main() -> Result<()> {
                 Path::new(path.as_str()),
                 &cli,
                 ggroot.as_path(),
-                squiggle.as_ref(),
-                &mut out,
             ),
             None => Ok(eprintln!("Usage: gg <path>")),
         };
