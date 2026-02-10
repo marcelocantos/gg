@@ -10,7 +10,6 @@ mod help;
 mod shell;
 mod zsh;
 
-use std::io::{self, stdout};
 use std::path::Path;
 
 use clap::Parser;
@@ -42,13 +41,12 @@ fn run() -> Result<()> {
         var => Path::new(var).to_path_buf(),
     };
 
-    let mut out: Box<dyn io::Write> = Box::new(stdout());
-
     if cli.get {
         return match cli.target {
             Some(ref path) => getgit(
                 Path::new(path.as_str()),
-                &cli,
+                cli.prefix.as_deref(),
+                cli.dry_run,
                 ggroot.as_path(),
             ),
             None => {
@@ -67,9 +65,9 @@ fn run() -> Result<()> {
             let command = cli.target.as_deref();
             let prefix = cli.alias_prefix.as_deref();
             match shell {
-                cli::Shell::Zsh => zsh(command, prefix, &exepath, &ggroot, &mut out),
-                cli::Shell::Bash => bash(command, prefix, &exepath, &ggroot, &mut out),
-                cli::Shell::Fish => fish(command, prefix, &exepath, &ggroot, &mut out),
+                cli::Shell::Zsh => zsh(command, prefix, &exepath, &ggroot),
+                cli::Shell::Bash => bash(command, prefix, &exepath, &ggroot),
+                cli::Shell::Fish => fish(command, prefix, &exepath, &ggroot),
             }
         }
     }

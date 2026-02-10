@@ -7,7 +7,6 @@ use std::sync::LazyLock;
 use anyhow::{bail, Result};
 use regex::Regex;
 
-use crate::cli;
 use crate::env;
 
 static URL_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -27,10 +26,10 @@ static URL_RE: LazyLock<Regex> = LazyLock::new(|| {
     .unwrap()
 });
 
-pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
+pub fn getgit(path: &Path, prefix: Option<&Path>, dry_run: bool, ggroot: &Path) -> Result<()> {
     let home = env::home()?;
     let squiggle = env::squiggler(home.as_path());
-    let url = match &cli.prefix {
+    let url = match prefix {
         Some(prefix) => prefix.join(path).to_path_buf(),
         None => path.to_path_buf(),
     }
@@ -117,7 +116,7 @@ pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
                 bail!("failed to create {}", orgroot.display());
             }
 
-            if !cli.dry_run {
+            if !dry_run {
                 let reporoot = orgroot.join(repo);
                 let mut out = io::stdout();
                 if reporoot.is_dir() {
