@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{self, Write};
 use std::path::Path;
 
 use anyhow::{Context, Result};
@@ -10,8 +10,8 @@ pub fn zsh(
     prefix: Option<&str>,
     exepath: &Path,
     ggroot: &Path,
-    out: &mut Box<dyn Write>,
 ) -> Result<()> {
+    let mut out = io::stdout();
     match command {
         Some(command) => {
             let prefix = prefix.context("missing prefix argument")?;
