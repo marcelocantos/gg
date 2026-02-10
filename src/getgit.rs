@@ -1,6 +1,7 @@
 use std::fs::create_dir_all;
 use std::io::{self, Write};
 use std::path::Path;
+use std::process::Command;
 
 use anyhow::{bail, Result};
 use regex::Regex;
@@ -46,21 +47,6 @@ pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
                     },
                 },
             };
-            let hostroot = ggroot.join(host.as_str());
-            if !hostroot.is_dir() {
-                eprintln!(
-                    "host dir \x1b[1m{}\x1b[0m not found; create manually if correct",
-                    squiggle(hostroot.as_path()).display()
-                );
-                return Ok(());
-            }
-
-            let prefix = m.name("prefix").unwrap().as_str();
-            let prefix = if !Regex::new(r"https?://|git@").unwrap().is_match(prefix) {
-                format!("https://{prefix}")
-            } else {
-                prefix.to_string()
-            };
 
             let org = m.name("org").unwrap().as_str();
             let repo = m.name("repo").unwrap().as_str();
@@ -68,6 +54,50 @@ pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
                 Some(cap) => cap.as_str().to_string(),
                 None => "".to_string(),
             };
+
+            // Construct git URL based on which regex group matched.
+            let giturl = if m.name("git_host").is_some() {
+                // Explicit SSH: git@host:org/repo.git — preserve as-is
+                format!("git@{}:{}/{}.git", host.as_str(), org, repo)
+            } else if m.name("http_host").is_some() {
+                // Explicit HTTPS: https://host/org/repo.git — preserve
+                let prefix = m.name("prefix").unwrap().as_str();
+                format!("{}{}/{}.git", prefix, org, repo)
+            } else {
+                // Shorthand: host/org/repo — use SSH by default, HTTPS if GGHTTP is set
+                let host = host.as_str();
+                if env::var("GGHTTP").is_empty() {
+                    format!("git@{host}:{org}/{repo}.git")
+                } else {
+                    format!("https://{host}/{org}/{repo}.git")
+                }
+            };
+
+            let hostroot = ggroot.join(host.as_str());
+            if !hostroot.is_dir() {
+                // Host dir doesn't exist — verify the remote repo before creating it.
+                eprintln!(
+                    "host dir \x1b[1m{}\x1b[0m is new, verifying remote...",
+                    squiggle(hostroot.as_path()).display()
+                );
+                let status = Command::new("git")
+                    .args(["ls-remote", &giturl])
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
+                    .status();
+                match status {
+                    Ok(s) if s.success() => {
+                        // Repo exists — create the host dir and proceed.
+                    }
+                    _ => {
+                        bail!(
+                            "remote not found at {}\nIf the host is correct, create {} manually",
+                            giturl,
+                            squiggle(hostroot.as_path()).display()
+                        );
+                    }
+                }
+            }
 
             eprintln!(
                 "👉 \x1b[1;30m{}/\x1b[1;31m{}\x1b[0m/\x1b[1;32m{}\x1b[0m/\x1b[1;34m{}\x1b[0m{}",
@@ -77,11 +107,6 @@ pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
                 repo,
                 tail.as_str()
             );
-
-            let hostorg = prefix.to_string() + org;
-            let giturl = Path::new(hostorg.as_str())
-                .join(repo)
-                .with_extension("git");
 
             let orgroot = hostroot.join(org);
             if create_dir_all(orgroot.as_path()).is_err() {
@@ -97,7 +122,7 @@ pub fn getgit(path: &Path, cli: &cli::Cli, ggroot: &Path) -> Result<()> {
                 } else {
                     writeln!(out, "action=clone")?;
                     writeln!(out, "git_dir={}", orgroot.display())?;
-                    writeln!(out, "git_url={}", giturl.display())?;
+                    writeln!(out, "git_url={giturl}")?;
                 }
                 writeln!(out, "cd_dir={}{}", reporoot.display(), tail)?;
             }

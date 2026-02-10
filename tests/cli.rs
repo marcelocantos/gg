@@ -37,12 +37,17 @@ impl GgResult {
 
 /// Run `gg --get <args>` with GGROOT set to the given dir.
 fn run_gg(ggroot: &std::path::Path, args: &[&str]) -> GgResult {
-    let output = Command::new(binary_path())
-        .arg("--get")
-        .args(args)
-        .env("GGROOT", ggroot)
-        .output()
-        .expect("failed to run gg");
+    run_gg_env(ggroot, args, &[])
+}
+
+/// Run `gg --get <args>` with GGROOT and additional env vars.
+fn run_gg_env(ggroot: &std::path::Path, args: &[&str], env: &[(&str, &str)]) -> GgResult {
+    let mut cmd = Command::new(binary_path());
+    cmd.arg("--get").args(args).env("GGROOT", ggroot);
+    for (k, v) in env {
+        cmd.env(k, v);
+    }
+    let output = cmd.output().expect("failed to run gg");
 
     GgResult {
         stdout: String::from_utf8_lossy(&output.stdout).to_string(),
@@ -61,13 +66,24 @@ fn setup_ggroot(host: &str, org: &str) -> TempDir {
 // --- URL format tests ---
 
 #[test]
-fn shorthand_url() {
+fn shorthand_url_ssh() {
     let tmp = setup_ggroot("github.com", "org");
     let r = run_gg(tmp.path(), &["github.com/org/repo"]);
     assert!(r.success);
     let p = r.parsed();
     assert_eq!(p["action"], "clone");
-    assert!(p["git_url"].contains("github.com/org/repo.git"));
+    assert_eq!(p["git_url"], "git@github.com:org/repo.git");
+    assert!(p["cd_dir"].ends_with("github.com/org/repo"));
+}
+
+#[test]
+fn shorthand_url_https_with_gghttp() {
+    let tmp = setup_ggroot("github.com", "org");
+    let r = run_gg_env(tmp.path(), &["github.com/org/repo"], &[("GGHTTP", "1")]);
+    assert!(r.success);
+    let p = r.parsed();
+    assert_eq!(p["action"], "clone");
+    assert_eq!(p["git_url"], "https://github.com/org/repo.git");
     assert!(p["cd_dir"].ends_with("github.com/org/repo"));
 }
 
@@ -184,11 +200,11 @@ fn invalid_url() {
 #[test]
 fn missing_host_dir() {
     let tmp = TempDir::new().unwrap();
-    // no host dir created under ggroot
+    // no host dir created under ggroot — git ls-remote will fail for the
+    // bogus URL, so we expect non-zero exit with an error message.
     let r = run_gg(tmp.path(), &["github.com/org/repo"]);
-    assert!(r.success); // exits 0, just warns
-    assert!(r.stdout.is_empty()); // no output
-    assert!(r.stderr.contains("not found"));
+    assert!(!r.success);
+    assert!(r.stderr.contains("remote not found"));
 }
 
 // --- Shell integration ---

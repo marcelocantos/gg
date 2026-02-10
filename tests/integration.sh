@@ -23,8 +23,12 @@ compdef() { :; }
 mkdir -p "$GGROOT/github.com/testorg"
 git init --bare "$GGROOT/github.com/testorg/testrepo.git" >/dev/null 2>&1
 
+# Use HTTPS URLs so the URL rewriting below works with shorthand input.
+export GGHTTP=1
+
 # Redirect https://github.com/ URLs to local bare repos via git config.
-# This lets the shell function's `git clone <https-url>` resolve locally.
+# This lets the shell function's `git clone <https-url>` resolve locally,
+# and also makes `git ls-remote` succeed for new host dir verification.
 export GIT_CONFIG_GLOBAL="$GGROOT/.gitconfig"
 git config --file "$GIT_CONFIG_GLOBAL" \
     "url.file://$GGROOT/github.com/.insteadOf" "https://github.com/"
