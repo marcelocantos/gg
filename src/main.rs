@@ -23,7 +23,14 @@ use zsh::zsh;
 
 use anyhow::Result;
 
-fn main() -> Result<()> {
+fn main() {
+    if let Err(e) = run() {
+        eprintln!("gg: {e}");
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     let cli = cli::Cli::parse();
 
     let home = env::home()?;
@@ -65,7 +72,5 @@ fn main() -> Result<()> {
                 cli::Shell::Fish => fish(arg1, arg2, &exepath, &ggroot, &mut out),
             }
         }
-    }?;
-
-    Ok(())
+    }
 }
