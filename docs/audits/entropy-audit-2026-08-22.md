@@ -4,6 +4,14 @@
 **Date:** 2026-08-22
 **Auditor:** entropy-audit owner (this campaign)
 
+> **Snapshot, not current state.** This is the audit as written on
+> 2026-08-22. Its `CLAUDE.md:<line>` citations predate the 2026-09-06
+> documentation pass, which moved that content to `AGENTS.md` and corrected
+> the documentation half of ENT-001 (the `GGNOAUTOCD` / VS Code contract)
+> and ENT-002 (bash/fish stubs). The *code* findings still stand: the
+> shell function still returns before clone and fetch. See
+> `../audit-log.md`.
+
 ## Executive summary
 
 - **Snapshot:** `/Users/marcelo/work/github.com/marcelocantos/gg`

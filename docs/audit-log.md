@@ -40,3 +40,20 @@ maintenance activities. Append-only — newest entries at the bottom.
   names, the zsh-only note, and a limitations section (dotted repo
   names, `--dry-run` still creating the org directory). Every claim was
   checked against `src/` and `tests/`.
+
+## 2026-09-06 — documentation pass, second sweep (burst 2026-09)
+
+- **Commit**: branch `burst/docs`
+- **Outcome**: Re-audited every behavioural claim against `src/` and
+  `tests/`. Corrected the `GGDIRVIEWER` target (`cd_dir`, which includes a
+  trailing path, not the repo root) and its detection (an `[ -x ]` test on
+  the bundled binary path, not the `.app` bundle's existence); `--dry-run`
+  (the `👉` line goes to stderr on every run, not only dry runs); the
+  bash/fish stubs (stderr, exit 0, empty stdout); the `-i CMD` alias form
+  without a prefix (`missing prefix argument`); and the installer's
+  `-i zsh)"` substring detection plus its unquoted interpolation. Added the
+  dispatch gotcha — the raw binary without `--get` ignores `-n` and its
+  argument and runs the installer. Fixed the AGENTS.md test descriptions
+  (`shell_integration` also asserts `.git` and skips silently without zsh;
+  the setup tests override `HOME` rather than clearing it). Flagged the
+  2026-08-22 entropy audit as a dated snapshot.
