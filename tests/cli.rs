@@ -37,6 +37,27 @@ impl GgResult {
     }
 }
 
+/// Sentinel for `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM`: an empty config file,
+/// so any `git` gg shells out to sees none of the developer's own settings
+/// (notably `url.*.insteadOf` rewrites, which would redirect `git ls-remote`).
+const NO_GIT_CONFIG: &str = "/dev/null";
+
+/// A `Command` for the gg binary with the ambient environment removed.
+///
+/// gg selects its clone protocol from `GGHTTP` and its paths from `GGROOT`
+/// and `HOME`, so a test that inherits the developer's shell asserts against
+/// that shell rather than against gg. Only `PATH` (gg shells out to `git`)
+/// and `HOME` (gg resolves `~`) are re-added; callers set the rest explicitly.
+fn hermetic_gg(home: &Path) -> Command {
+    let mut cmd = Command::new(binary_path());
+    cmd.env_clear()
+        .env("PATH", std::env::var("PATH").unwrap_or_default())
+        .env("HOME", home)
+        .env("GIT_CONFIG_GLOBAL", NO_GIT_CONFIG)
+        .env("GIT_CONFIG_SYSTEM", NO_GIT_CONFIG);
+    cmd
+}
+
 /// Run `gg --get <args>` with GGROOT set to the given dir.
 fn run_gg(ggroot: &std::path::Path, args: &[&str]) -> GgResult {
     run_gg_env(ggroot, args, &[])
@@ -44,7 +65,9 @@ fn run_gg(ggroot: &std::path::Path, args: &[&str]) -> GgResult {
 
 /// Run `gg --get <args>` with GGROOT and additional env vars.
 fn run_gg_env(ggroot: &std::path::Path, args: &[&str], env: &[(&str, &str)]) -> GgResult {
-    let mut cmd = Command::new(binary_path());
+    // ggroot doubles as HOME: these tests never read the real home dir, and a
+    // temp dir keeps `squiggler` from abbreviating paths the assertions match.
+    let mut cmd = hermetic_gg(ggroot);
     cmd.arg("--get").args(args).env("GGROOT", ggroot);
     for (k, v) in env {
         cmd.env(k, v);
@@ -177,7 +200,7 @@ fn prefix_flag() {
 #[test]
 fn dry_run_no_stdout() {
     let tmp = setup_ggroot("github.com", "org");
-    let output = Command::new(binary_path())
+    let output = hermetic_gg(tmp.path())
         .args(["--get", "-n", "github.com/org/repo"])
         .env("GGROOT", tmp.path())
         .output()
@@ -274,13 +297,7 @@ enum SetupViewer {
 
 /// Run `gg` (no args) with HOME set to the given dir, piping stdin.
 fn run_setup(home: &Path, stdin_input: &str) -> GgResult {
-    let mut child = Command::new(binary_path())
-        .env("HOME", home)
-        .env_remove("GGROOT")
-        .env_remove("GGHTTP")
-        .env_remove("GGDIRVIEWER")
-        .env_remove("GGNOAUTOCD")
-        .env_remove("TERM_PROGRAM")
+    let mut child = hermetic_gg(home)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

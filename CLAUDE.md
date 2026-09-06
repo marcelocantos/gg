@@ -65,8 +65,13 @@ master, on `v*` tags and on pull requests. Wire the hook once per clone with
 `make hooks`. The owner's emergency bypass is `git push --no-verify`; agents
 must not use it.
 
-Known local-only redness: `tests/cli.rs` does not clear the ambient
-environment, so an exported `GGHTTP=1` (as in the owner's shell) makes
-`shorthand_url_ssh` fail locally while CI stays green. Until the harness
-clears `GG*` variables, `make gate` is red in that shell for reasons that
-have nothing to do with the change being pushed.
+The gate runs `cargo test` under a deliberately hostile environment
+(`GGHTTP=1`, bogus `GGROOT`/`GGDIRVIEWER`, `GGNOAUTOCD=1`, `TERM_PROGRAM=gate`
+— see `GATE_HOSTILE_ENV` in the Makefile). gg takes its behaviour from those
+variables, so a test that lets the developer's shell reach the gg it spawns is
+testing the shell; the hostile env turns that into a failure here rather than a
+green CI run and a red laptop. Tests spawn gg through `hermetic_gg` in
+`tests/cli.rs`, which does `env_clear()` and re-adds only `PATH`, `HOME`, and
+`GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM=/dev/null` (so a developer's
+`url.*.insteadOf` rules cannot redirect the `git ls-remote` gg shells out to).
+Add new gg invocations through that helper.
