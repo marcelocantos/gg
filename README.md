@@ -8,13 +8,19 @@ Shorthand URLs default to SSH (`git@host:org/repo.git`). Set `GGHTTP=1`
 for HTTPS. New host directories are verified via `git ls-remote` before
 creation.
 
+Shell integration is zsh only. `gg -i bash` and `gg -i fish` are accepted
+by the CLI but print `not supported yet` and emit nothing (tracked in
+https://github.com/marcelocantos/gg/issues/1).
+
 ## Installation
 
 ### From release binaries
 
-Download the binary for your platform from the
-[Releases](https://github.com/marcelocantos/gg/releases) page and place
-it somewhere on your `PATH` (e.g., `/usr/local/bin` or `~/.local/bin`).
+Download the tarball for your platform from the
+[Releases](https://github.com/marcelocantos/gg/releases) page
+(`gg-linux-amd64`, `gg-macos-amd64`, `gg-macos-arm64`, each a `.tar.gz`
+containing the `gg` binary plus a `.sha256` file), extract it, and place
+`gg` somewhere on your `PATH` (e.g., `/usr/local/bin` or `~/.local/bin`).
 
 On macOS, you may need to allow the binary in
 **System Settings > Privacy & Security** on first run.
@@ -47,8 +53,21 @@ gg https://github.com/org/repo  # explicit HTTPS
 gg git@github.com:org/repo      # explicit SSH
 ```
 
-If the repo is already cloned, gg fetches instead. Either way, it `cd`s
-into the repo and opens your configured viewer.
+If the repo is already cloned, gg fetches (`git fetch --all --prune`,
+with submodules) instead of cloning. Either way, it `cd`s into the repo
+and opens your configured viewer. A trailing path after the repo
+(`gg github.com/org/repo/some/dir`) is appended to the `cd` target.
+
+### Flags
+
+| Flag | Purpose |
+|---|---|
+| `-n`, `--dry-run` | Print the resolved path to stderr and stop. Nothing is cloned, fetched, or opened. A new host is still verified with `git ls-remote`, and the org directory under `GGROOT` is still created. |
+| `-i`, `--install <zsh\|bash\|fish>` | Emit shell integration code for `eval`. With two further arguments (`CMD PREFIX`) it emits an alias command instead. |
+| `-V`, `--version` | Print version |
+| `-h`, `--help` | Print usage |
+
+`gg` with no arguments runs the interactive installer.
 
 ### Aliases
 
@@ -64,16 +83,25 @@ ghg org/repo      # → gg github.com/org/repo
 gmg gg            # → gg github.com/marcelocantos/gg
 ```
 
-Tab-completion works for all cloned repos.
+Tab-completion offers the directories under the alias prefix (or under
+`GGROOT` for plain `gg`), so every cloned repo completes.
 
 ### Environment variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `GGROOT` | Repo tree root | `~/work` |
-| `GGHTTP` | Set to `1` for HTTPS URLs | SSH |
-| `GGDIRVIEWER` | Editor command (`-` to disable) | `code` if installed |
-| `GGNOAUTOCD` | Set to `1` to suppress auto-cd | off (also suppressed in VSCode) |
+| `GGHTTP` | Any non-empty value makes shorthand URLs use HTTPS | unset (SSH) |
+| `GGDIRVIEWER` | Command run on the repo directory after clone or fetch; `-` disables it | VS Code's bundled `code` binary, if `/Applications/Visual Studio Code.app` exists; otherwise nothing |
+| `GGNOAUTOCD` | Any non-empty value makes the shell function stop after resolving the path: no clone, no fetch, no `cd`, no viewer. The same happens automatically when `TERM_PROGRAM` is `vscode` (VS Code's integrated terminal). | unset |
+
+### Limitations
+
+- Repository names containing a dot (for example `next.js`) are rejected
+  with `invalid path`; only a trailing `.git` is stripped.
+- Only the three-level `host/org/repo` layout is supported. Anything after
+  `repo` is treated as a directory inside the repo to `cd` into, not as a
+  nested group.
 
 ## License
 

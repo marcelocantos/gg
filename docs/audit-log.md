@@ -27,3 +27,16 @@ maintenance activities. Append-only — newest entries at the bottom.
 
 - **Commit**: `bafcc70`
 - **Outcome**: Tagged v0.1.0 after CI and release workflow fixes landed. First release with working automated cross-compilation for macOS x86_64.
+
+## 2026-09-06 — documentation pass (burst 2026-09)
+
+- **Commit**: branch `burst/docs`
+- **Outcome**: Replaced the standalone `CLAUDE.md` with a canonical
+  `AGENTS.md` plus a thin `CLAUDE.md` adapter. Corrected the `GGNOAUTOCD`
+  / VS Code description (the shell function returns before clone and
+  fetch, not just before `cd`), the `GGDIRVIEWER` default (VS Code's
+  bundled binary at a fixed path, not `code` on `PATH`), and `GGHTTP`
+  (any non-empty value). README gained a flags table, the release asset
+  names, the zsh-only note, and a limitations section (dotted repo
+  names, `--dry-run` still creating the org directory). Every claim was
+  checked against `src/` and `tests/`.
