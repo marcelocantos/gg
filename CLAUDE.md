@@ -55,3 +55,18 @@ All source lives in `src/`. The binary entry point is `main.rs`.
 - `GGHTTP` — set to `1` to prefer HTTPS URLs over SSH (default: SSH)
 - `GGDIRVIEWER` — IDE/editor command (default: `code` if VSCode installed; `-` to disable)
 - `GGNOAUTOCD` — disable auto-cd after clone/fetch (also auto-suppressed in VSCode)
+
+## Delivery
+
+Merged to master, through a gated push. `scripts/hooks/pre-push` runs
+`make gate` (`cargo fmt -- --check`, `cargo clippy --all-targets -- -D warnings`,
+`cargo test`) and refuses the push when it is red; CI runs the same recipe on
+master, on `v*` tags and on pull requests. Wire the hook once per clone with
+`make hooks`. The owner's emergency bypass is `git push --no-verify`; agents
+must not use it.
+
+Known local-only redness: `tests/cli.rs` does not clear the ambient
+environment, so an exported `GGHTTP=1` (as in the owner's shell) makes
+`shorthand_url_ssh` fail locally while CI stays green. Until the harness
+clears `GG*` variables, `make gate` is red in that shell for reasons that
+have nothing to do with the change being pushed.
