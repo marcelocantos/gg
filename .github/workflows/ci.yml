@@ -1,16 +1,24 @@
 name: CI
 
+# CI runs the same recipe as the local pre-push gate (`make gate`), so a green
+# push and a green Actions run mean the same thing. Tags are included because
+# a release tag must not be able to skip the gate; pull_request stays so
+# inbound external PRs are still checked.
 on:
   push:
     branches: [master]
+    tags: ['v*']
   pull_request:
 
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_TERM_COLOR: always
+
 jobs:
-  test:
+  gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo clippy -- -D warnings
-      - run: cargo test
-      - run: cargo fmt -- --check
+      - uses: Swatinem/rust-cache@v2
+      - run: make gate
