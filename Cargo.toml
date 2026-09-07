@@ -16,3 +16,10 @@ regex = "1.6.0"
 
 [dev-dependencies]
 tempfile = "3"
+
+# The benchmark harness is benches/bench.rs itself — no framework, so no
+# criterion (and no plotters or rayon) in the dev graph of a 550-line
+# crate. `cargo bench -- --gate` is the perf gate; see docs/perf/baseline.md.
+[[bench]]
+name = "bench"
+harness = false

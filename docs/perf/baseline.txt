@@ -1,0 +1,4 @@
+# gg benchmarks — see docs/perf/baseline.md
+SpawnControl	978375 ns/op	84032 binary-bytes
+InstallZsh	1624542 ns/op	2175712 binary-bytes	1075 stdout-bytes
+GetExistingRepo	1876000 ns/op	190 stdout-bytes
