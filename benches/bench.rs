@@ -51,6 +51,14 @@ const MIN_ROUND: Duration = Duration::from_millis(1);
 /// worse than a coarse one.
 const TIMING_TOLERANCE: f64 = 0.25;
 
+/// Metrics that describe the machine rather than the code. They are
+/// printed for context and never fail the gate: a binary built by a
+/// different toolchain on a different platform is a different size, and
+/// gating on that would fail every CI run while telling nobody
+/// anything. A jump in one of them is still how you find out that a
+/// timing change is really a dependency change.
+const MACHINE_METRICS: &[&str] = &["binary-bytes"];
+
 /// Where the locked baseline lives, relative to the crate root.
 const BASELINE: &str = "docs/perf/baseline.txt";
 
@@ -283,6 +291,9 @@ fn compare(base: &[Sample], got: &[Sample], loose: bool) -> bool {
             continue;
         };
         for (metric, want) in &b.counted {
+            if MACHINE_METRICS.contains(&metric.as_str()) {
+                continue;
+            }
             match g.counted.get(metric) {
                 Some(have) if have == want => {}
                 Some(have) => {

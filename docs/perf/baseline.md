@@ -54,8 +54,12 @@ indistinguishable from a change in gg.
 | `InstallZsh` | 2.13 ms | ~0.9 ms |
 | `GetExistingRepo` | 2.46 ms | ~1.2 ms |
 
-Counted exactly: 1,075 bytes of shell emitted by `-i zsh`, 190 bytes by
-`--get`, and the binary's own size.
+Counted exactly: 1,075 bytes of shell emitted by `-i zsh` and 190 bytes
+by `--get`. The binary's own size is reported but never gated — a
+different toolchain on a different platform produces a different size,
+and gating on that would fail every CI run while telling nobody
+anything. CI runs `--gate --loose`, which compares the two byte counts
+and nothing else.
 
 ## What was tried and did not work
 
