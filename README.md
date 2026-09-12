@@ -57,9 +57,10 @@ gg git@github.com:org/repo      # explicit SSH
 ```
 
 These commands work after the zsh function is loaded. If the repo is
-already cloned, gg fetches instead. Either way, it `cd`s into the repo
-and opens your configured viewer — unless `GGNOAUTOCD` is set or you
-are in VSCode's terminal (see below).
+already cloned, gg fetches instead. Either way, it clones or fetches
+first, then `cd`s into the repo and opens your configured viewer —
+unless `GGNOAUTOCD` is set or you are in VSCode's terminal, in which
+case git still runs and only `cd`/viewer are skipped.
 
 ### Aliases
 
@@ -84,7 +85,7 @@ Tab-completion works for all cloned repos under the alias prefix.
 | `GGROOT` | Repo tree root | `~/work` |
 | `GGHTTP` | Set to `1` for HTTPS URLs | SSH |
 | `GGDIRVIEWER` | Editor command (`-` to disable) | `code` if the macOS VSCode binary exists |
-| `GGNOAUTOCD` | If set, skip clone, fetch, cd, and viewer (same skip when `TERM_PROGRAM=vscode`) | off |
+| `GGNOAUTOCD` | If set, skip `cd` and viewer after clone/fetch (same skip when `TERM_PROGRAM=vscode`) | off |
 
 ## License
 

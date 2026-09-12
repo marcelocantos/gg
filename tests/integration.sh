@@ -75,14 +75,31 @@ gto testrepo 2>/dev/null
 [[ "$PWD" == "$GGROOT/github.com/testorg/testrepo" ]] && ok=true || ok=false
 check "alias cd into repo" "$ok"
 
-# --- Test 4: GGNOAUTOCD ---
+# --- Test 4: GGNOAUTOCD still clones, skips cd/viewer ---
+git init --bare "$GGROOT/github.com/testorg/newrepo.git" >/dev/null 2>&1
 export GGNOAUTOCD=1
 cd /tmp
-gg github.com/testorg/testrepo 2>/dev/null
+gg github.com/testorg/newrepo 2>/dev/null
+
+[[ -d "$GGROOT/github.com/testorg/newrepo/.git" ]] && ok=true || ok=false
+check "GGNOAUTOCD still clones" "$ok"
 
 [[ "$PWD" == "/tmp" || "$PWD" == "/private/tmp" ]] && ok=true || ok=false
-check "GGNOAUTOCD suppresses operations" "$ok"
+check "GGNOAUTOCD skips cd" "$ok"
 unset GGNOAUTOCD
+
+# --- Test 5: TERM_PROGRAM=vscode still clones, skips cd/viewer ---
+git init --bare "$GGROOT/github.com/testorg/vscoderepo.git" >/dev/null 2>&1
+export TERM_PROGRAM=vscode
+cd /tmp
+gg github.com/testorg/vscoderepo 2>/dev/null
+
+[[ -d "$GGROOT/github.com/testorg/vscoderepo/.git" ]] && ok=true || ok=false
+check "vscode still clones" "$ok"
+
+[[ "$PWD" == "/tmp" || "$PWD" == "/private/tmp" ]] && ok=true || ok=false
+check "vscode skips cd" "$ok"
+unset TERM_PROGRAM
 
 # --- Summary ---
 echo ""

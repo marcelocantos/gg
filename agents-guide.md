@@ -54,7 +54,7 @@ There is no `--help-agent` flag.
 | `GGROOT` | Repo tree root | `~/work` |
 | `GGHTTP` | Non-empty → HTTPS shorthand | unset (SSH) |
 | `GGDIRVIEWER` | Editor command; `-` to disable | macOS VSCode `code` path if that file exists |
-| `GGNOAUTOCD` | If set, zsh function returns after `--get`: no clone, fetch, cd, or viewer | unset (same skip when `TERM_PROGRAM=vscode`) |
+| `GGNOAUTOCD` | If set, skip `cd` and viewer after clone/fetch | unset (same skip when `TERM_PROGRAM=vscode`) |
 
 ## Shell integration
 
@@ -72,7 +72,8 @@ Tab-completion (`_gg` / alias `compdef`) lists directories under
 `$GGROOT` or the alias prefix.
 
 If `GGNOAUTOCD` is set or `TERM_PROGRAM` is `vscode`, the function
-returns before git. `--get` itself never clones.
+still clones or fetches, then returns before `cd` and the viewer.
+`--get` itself never clones.
 
 ## Key=value output protocol (`--get`)
 

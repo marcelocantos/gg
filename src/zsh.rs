@@ -51,11 +51,11 @@ gg() {{\n\
             cd_dir) cd_dir=\"${{_gg_line#*=}}\" ;;\n\
         esac\n\
     done <<< \"$output\"\n\
-    if [[ \"${{TERM_PROGRAM:-}}\" == \"vscode\" || -n \"${{GGNOAUTOCD:-}}\" ]]; then return; fi\n\
     case \"$action\" in\n\
         clone) git -C \"$git_dir\" clone --recurse-submodules \"$git_url\" || return ;;\n\
         fetch) git -C \"$git_dir\" fetch --all --prune --jobs=10 --recurse-submodules=yes || return ;;\n\
     esac\n\
+    if [[ \"${{TERM_PROGRAM:-}}\" == \"vscode\" || -n \"${{GGNOAUTOCD:-}}\" ]]; then return; fi\n\
     cd \"$cd_dir\" || return\n\
     local viewer=\"${{GGDIRVIEWER:-}}\"\n\
     if [ -z \"$viewer\" ]; then\n\

@@ -38,8 +38,8 @@ There are currently 27 tests:
   detection, default/custom GGROOT, protocol, viewer, aliases,
   append/print/no-op, `.zshrc` preservation, block markers
 - **Shell integration** — zsh journey (clone, fetch, alias,
-  GGNOAUTOCD) against local bare repos. The GGNOAUTOCD case only
-  asserts `PWD` is unchanged.
+  GGNOAUTOCD, `TERM_PROGRAM=vscode`) against local bare repos.
+  The skip-cd cases assert `.git` exists and `PWD` is unchanged.
 
 Tests use `tempfile::TempDir`. Setup tests override `HOME`. URL tests
 inherit ambient `GGHTTP` unless the test sets it.
@@ -73,14 +73,12 @@ All source lives in `src/`. Binary entry: `main.rs`.
    <shell>` → zsh codegen or bash/fish stub. `--get` → `getgit`.
    `--get` with no target prints `Usage: gg <path>` and exits 0.
 2. The zsh function (`eval "$(gg -i zsh)"`) calls `gg --get <url>`,
-   parses stdout, then clone/fetch, `cd`, and viewer — unless
-   `GGNOAUTOCD` is set or `TERM_PROGRAM=vscode`, in which case it
-   **returns before git, cd, and viewer**.
+   parses stdout, then always clone/fetch. `GGNOAUTOCD` or
+   `TERM_PROGRAM=vscode` skip only `cd` and the viewer.
 3. Shorthand URLs default to SSH; `GGHTTP=1` selects HTTPS. New host
    directories are verified with `git ls-remote` before creation.
 
-`--get` never clones. Skipping the executor skips the only git
-clone/fetch.
+`--get` never clones; the zsh function is the only clone/fetch path.
 
 ### `--get` protocol (stdout)
 
@@ -97,9 +95,8 @@ clone/fetch.
 - `GGHTTP` — set to `1` to prefer HTTPS URLs over SSH (default: SSH)
 - `GGDIRVIEWER` — IDE/editor command (default: the macOS VSCode
   `code` binary if that path exists; `-` to disable)
-- `GGNOAUTOCD` — if set, the zsh function returns immediately after
-  `--get` (no clone, fetch, cd, or viewer). The same skip applies
-  when `TERM_PROGRAM=vscode`.
+- `GGNOAUTOCD` — if set, skip `cd` and viewer after clone/fetch.
+  The same skip applies when `TERM_PROGRAM=vscode`.
 
 Public CLI and env contracts: [STABILITY.md](STABILITY.md).
 User-facing usage: [README.md](README.md).

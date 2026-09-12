@@ -50,11 +50,11 @@ There is **no** `--help-agent` flag at HEAD.
 | `GGROOT` | Tree root for host/org/repo | `~/work` |
 | `GGHTTP` | Non-empty → shorthand URLs use HTTPS | empty (SSH) |
 | `GGDIRVIEWER` | Viewer command; `-` disables. Unset → zsh tries the macOS VSCode `code` binary path | unset |
-| `GGNOAUTOCD` | If set, zsh function **returns after `--get`** — no clone, fetch, cd, or viewer | unset |
-| `TERM_PROGRAM` | `vscode` triggers the same early return as `GGNOAUTOCD` | unset |
+| `GGNOAUTOCD` | If set, skip `cd` and viewer after clone/fetch | unset |
+| `TERM_PROGRAM` | `vscode` skips `cd` and viewer the same way; git still runs | unset |
 
-`GGNOAUTOCD` / VSCode do **not** mean "skip cd only". `--get` never
-clones; skipping the executor skips git.
+`--get` never clones. `GGNOAUTOCD` / VSCode skip only `cd` and the
+viewer; the generated function still runs `git clone` / `git fetch`.
 
 ### URL parse (`--get`)
 
@@ -102,8 +102,8 @@ writes. Re-running `gg` with that substring present is a no-op.
 
 - [ ] bash/fish: drop from clap, fail non-zero, or implement
       (https://github.com/marcelocantos/gg/issues/1)
-- [ ] Split GGNOAUTOCD/VSCode so clone/fetch still run if that is the
-      intended product (or rename the var if skip-all is intended)
+- [x] Split GGNOAUTOCD/VSCode so clone/fetch still run; only `cd` and
+      viewer are skipped
 - [ ] Gate `create_dir_all` on `!dry_run`
 - [ ] `--get` with no target should exit non-zero
 - [ ] Repo names containing `.`
