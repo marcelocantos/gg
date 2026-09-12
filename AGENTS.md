@@ -26,14 +26,15 @@ integrations.
 
 Tests live in `tests/cli.rs` (Rust integration tests) and
 `tests/integration.sh` (zsh journey). All tests run via `cargo test`.
-There are currently 27 tests:
+There are currently 31 tests:
 
 - **URL format tests** — shorthand SSH/HTTPS, explicit SSH/HTTPS,
   `.git` suffix stripping, tail paths
 - **Clone vs fetch** — clone plan when repo missing, fetch plan when
   repo exists (`--get` does not run git)
 - **Prefix, dry-run, error cases** — prefix flag, dry-run suppresses
-  stdout (org dirs are still created), invalid URL, missing host dir
+  stdout (org dirs are still created), invalid URL, missing host dir,
+  `.` / `..` path escape rejected
 - **Setup (interactive installer)** — 14 tests: already-installed
   detection, default/custom GGROOT, protocol, viewer, aliases,
   append/print/no-op, `.zshrc` preservation, block markers
@@ -54,7 +55,9 @@ All source lives in `src/`. Binary entry: `main.rs`.
 - **getgit.rs** — parses a Git URL/shorthand with a static
   `LazyLock<Regex>`, resolves host/org/repo, verifies new hosts via
   `git ls-remote`, writes key=value to stdout. Repo names with `.`
-  (e.g. `next.js`) do not match. `--dry-run` skips stdout but still
+  (e.g. `next.js`) do not match. Host/org/repo/tail components `.`
+  and `..` are `invalid path`; emitted `git_dir` / `cd_dir` stay
+  under `$GGROOT`. `--dry-run` skips stdout but still
   `create_dir_all`s the org directory.
 - **env.rs** — `GGROOT`, `GGHTTP`, home dir, exe path, `~` display.
 - **setup.rs** — interactive installer. Detects install by substring

@@ -209,6 +209,92 @@ fn missing_host_dir() {
     assert!(r.stderr.contains("remote not found"));
 }
 
+/// Fable F2: `..` in host/org/tail must not escape `$GGROOT` or skip
+/// `ls-remote` by treating `$GGROOT/..` as an existing host.
+#[test]
+fn dotdot_host_is_invalid_path() {
+    let tmp = TempDir::new().unwrap();
+    let escaped_org = tmp.path().join("..").join("org");
+    let existed_before = escaped_org.exists();
+
+    let r = run_gg(tmp.path(), &["../org/repo"]);
+    assert!(!r.success, "stdout={:?} stderr={:?}", r.stdout, r.stderr);
+    assert!(
+        r.stderr.contains("invalid path"),
+        "expected invalid path, got stderr={:?}",
+        r.stderr
+    );
+    assert!(r.stdout.is_empty(), "must not emit a plan: {:?}", r.stdout);
+    if !existed_before {
+        assert!(
+            !escaped_org.exists(),
+            "must not create {}",
+            escaped_org.display()
+        );
+    }
+}
+
+#[test]
+fn dotdot_org_is_invalid_path() {
+    let tmp = setup_ggroot("github.com", "legit");
+    let r = run_gg(tmp.path(), &["github.com/../evil"]);
+    assert!(!r.success, "stdout={:?} stderr={:?}", r.stdout, r.stderr);
+    assert!(
+        r.stderr.contains("invalid path"),
+        "expected invalid path, got stderr={:?}",
+        r.stderr
+    );
+    assert!(r.stdout.is_empty());
+    assert!(!tmp.path().join("evil").exists());
+}
+
+#[test]
+fn dotdot_tail_is_invalid_path() {
+    let tmp = setup_ggroot("github.com", "org");
+    let r = run_gg(tmp.path(), &["github.com/org/repo/../../../.ssh"]);
+    assert!(!r.success, "stdout={:?} stderr={:?}", r.stdout, r.stderr);
+    assert!(
+        r.stderr.contains("invalid path"),
+        "expected invalid path, got stderr={:?}",
+        r.stderr
+    );
+    assert!(r.stdout.is_empty());
+}
+
+#[test]
+fn plan_paths_stay_under_ggroot() {
+    let tmp = setup_ggroot("github.com", "org");
+    let r = run_gg(tmp.path(), &["github.com/org/repo/sub/path"]);
+    assert!(r.success, "stderr={:?}", r.stderr);
+    let p = r.parsed();
+    let ggroot = tmp.path().canonicalize().unwrap();
+    for key in ["git_dir", "cd_dir"] {
+        let raw = Path::new(&p[key]);
+        let normalized = lexical_normalize(raw);
+        assert!(
+            normalized.starts_with(&ggroot) || raw.starts_with(tmp.path()),
+            "{key}={} escaped {}",
+            p[key],
+            tmp.path().display()
+        );
+    }
+}
+
+fn lexical_normalize(path: &Path) -> std::path::PathBuf {
+    use std::path::Component;
+    let mut out = std::path::PathBuf::new();
+    for c in path.components() {
+        match c {
+            Component::ParentDir => {
+                out.pop();
+            }
+            Component::CurDir => {}
+            other => out.push(other),
+        }
+    }
+    out
+}
+
 // --- Setup (interactive installer) ---
 
 /// Whether VSCode is installed on this machine (affects prompt flow).

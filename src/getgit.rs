@@ -1,6 +1,6 @@
 use std::fs::create_dir_all;
 use std::io::{self, Write};
-use std::path::Path;
+use std::path::{Component, Path, PathBuf};
 use std::process::Command;
 use std::sync::LazyLock;
 
@@ -58,6 +58,11 @@ pub fn getgit(path: &Path, prefix: Option<&Path>, dry_run: bool, ggroot: &Path) 
                 None => "".to_string(),
             };
 
+            reject_dot_components("host", host.as_str())?;
+            reject_dot_components("org", org)?;
+            reject_dot_components("repo", repo)?;
+            reject_dot_components("tail", &tail)?;
+
             // Construct git URL based on which regex group matched.
             let giturl = if m.name("git_host").is_some() {
                 // Explicit SSH: git@host:org/repo.git — preserve as-is
@@ -112,10 +117,15 @@ pub fn getgit(path: &Path, prefix: Option<&Path>, dry_run: bool, ggroot: &Path) 
             );
 
             let orgroot = hostroot.join(org);
+            let reporoot = orgroot.join(repo);
+            let cd_dir = append_tail(&reporoot, &tail);
+            require_under_ggroot(ggroot, &orgroot)?;
+            require_under_ggroot(ggroot, &reporoot)?;
+            require_under_ggroot(ggroot, &cd_dir)?;
+
             create_dir_all(orgroot.as_path())?;
 
             if !dry_run {
-                let reporoot = orgroot.join(repo);
                 let mut out = io::stdout();
                 if reporoot.is_dir() {
                     writeln!(out, "action=fetch")?;
@@ -125,11 +135,56 @@ pub fn getgit(path: &Path, prefix: Option<&Path>, dry_run: bool, ggroot: &Path) 
                     writeln!(out, "git_dir={}", orgroot.display())?;
                     writeln!(out, "git_url={giturl}")?;
                 }
-                writeln!(out, "cd_dir={}{}", reporoot.display(), tail)?;
+                writeln!(out, "cd_dir={}", cd_dir.display())?;
             }
 
             Ok(())
         }
         None => bail!("invalid path: {}", path.display()),
     }
+}
+
+fn reject_dot_components(label: &str, value: &str) -> Result<()> {
+    for part in value.split('/') {
+        if part.is_empty() {
+            continue;
+        }
+        if part == "." || part == ".." {
+            bail!("invalid path: {label} contains {part:?}");
+        }
+    }
+    Ok(())
+}
+
+fn append_tail(reporoot: &Path, tail: &str) -> PathBuf {
+    let mut cd_dir = reporoot.to_path_buf();
+    for part in tail.split('/') {
+        if !part.is_empty() {
+            cd_dir.push(part);
+        }
+    }
+    cd_dir
+}
+
+fn require_under_ggroot(ggroot: &Path, path: &Path) -> Result<()> {
+    let root = normalize_path(ggroot);
+    let candidate = normalize_path(path);
+    if candidate.strip_prefix(&root).is_err() {
+        bail!("invalid path: {} escapes $GGROOT", path.display());
+    }
+    Ok(())
+}
+
+fn normalize_path(path: &Path) -> PathBuf {
+    let mut out = PathBuf::new();
+    for c in path.components() {
+        match c {
+            Component::ParentDir => {
+                out.pop();
+            }
+            Component::CurDir => {}
+            other => out.push(other),
+        }
+    }
+    out
 }

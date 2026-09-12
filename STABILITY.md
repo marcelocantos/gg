@@ -66,6 +66,8 @@ Constraints that are easy to miss:
 
 - Repo capture is `[^/\.]+`. Names with interior dots (`next.js`) are
   `invalid path`.
+- Host, org, repo, and tail components `.` and `..` are `invalid path`.
+  Emitted `git_dir` / `cd_dir` stay under `$GGROOT` after normalization.
 - Tail is **not** ignored: it is appended to `cd_dir`.
 - New host directories are created only after `git ls-remote`
   succeeds (stderr discarded). `--dry-run` still runs that check and
